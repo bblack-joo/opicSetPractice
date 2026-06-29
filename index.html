@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OPIc 세트 질문 연습</title>
+<style>
+  :root{--bg:#f6f7fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--blue:#2563eb;--pink:#ec4899;--green:#16a34a;--red:#dc2626;--yellow:#ca8a04}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:18px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  h1{margin:0;font-size:22px} .sub{font-size:13px;color:var(--muted);margin-top:5px}
+  main{max-width:1100px;margin:0 auto;padding:20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:850px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  h2{font-size:17px;margin:0 0 12px} textarea{width:100%;min-height:190px;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.5;resize:vertical}
+  button,select,input{font:inherit} button{border:0;border-radius:10px;padding:10px 14px;background:var(--blue);color:#fff;cursor:pointer;font-weight:700} button.secondary{background:#374151} button.light{background:#eef2ff;color:#1d4ed8} button.ghost{background:#fff;color:#374151;border:1px solid var(--line)} button.good{background:var(--green)} button.warn{background:var(--yellow)} button.bad{background:var(--red)}
+  button:disabled{opacity:.45;cursor:not-allowed}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mt{margin-top:12px}.small{font-size:13px;color:var(--muted)}
+  select,input[type="number"]{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff} label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+  .pill{display:inline-flex;gap:5px;align-items:center;border-radius:999px;padding:5px 10px;background:#f3f4f6;color:#374151;font-size:13px;font-weight:700}.pill.pink{background:#fce7f3;color:#be185d}.pill.blue{background:#dbeafe;color:#1d4ed8}.pill.green{background:#dcfce7;color:#15803d}.pill.yellow{background:#fef3c7;color:#a16207}
+  .qbox{border:2px solid #dbeafe;background:#eff6ff;border-radius:18px;padding:20px;min-height:280px}.qtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}.qnum{font-size:48px;color:#c7ccd4;font-weight:300;line-height:1}.question{font-size:28px;line-height:1.35;font-weight:800;color:#1e3a8a;margin:16px 0}.ko{font-size:20px;line-height:1.45;color:#374151;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}.hidden{display:none}.setList{display:grid;gap:8px;max-height:330px;overflow:auto}.setItem{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}.setItem b{font-size:14px}.setItem span{font-size:12px;color:var(--muted)}
+  .timer{font-variant-numeric:tabular-nums;font-size:28px;font-weight:800}.progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:var(--blue);width:0%}.answer{width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:12px}.kbd{font-size:12px;background:#111827;color:#fff;border-radius:6px;padding:2px 6px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:10px;font-size:13px;color:#9a3412}
+</style>
+</head>
+<body>
+<header>
+  <h1>OPIc 세트 질문 연습</h1>
+  <div class="sub">엑셀 파일을 불러오거나 데이터를 붙여넣으면 공통형/선택형 · Unit · 그룹 번호 기준으로 한 세트씩 출제합니다.</div>
+</header>
+<main>
+  <section class="grid">
+    <div class="card">
+      <h2>1. 엑셀 데이터 붙여넣기</h2>
+      <div class="small">열 순서: 공통형/선택형 → Unit번호 → 그룹번호 → 질문번호 → 난이도 → 내용 → 해석</div>
+      <div class="row mt">
+        <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.tsv" />
+        <button class="ghost" id="fileLoadBtn">엑셀 파일 불러오기</button>
+      </div>
+      <div class="small mt">엑셀은 <b>0.질문</b> 탭에서 읽고, 화면처럼 3행의 헤더 아래 데이터를 자동으로 가져옵니다.</div>
+      <textarea id="dataInput" placeholder="공통형	2	1	1	Int	Tell me about...	해석..."></textarea>
+      <div class="row mt">
+        <button id="loadBtn">데이터 불러오기</button>
+        <button class="ghost" id="sampleBtn">샘플 넣기</button>
+        <button class="ghost" id="clearBtn">초기화</button>
+      </div>
+      <div id="loadInfo" class="small mt"></div>
+    </div>
+    <div class="card">
+      <h2>2. 세트 고르기</h2>
+      <div class="row">
+        <div><label>출제 유형</label><select id="typeFilter"><option value="">전체</option></select></div>
+        <div><label>Unit</label><select id="unitFilter"><option value="">전체</option></select></div>
+        <div><label>난이도</label><select id="levelFilter"><option value="">전체</option></select></div>
+      </div>
+      <div class="row mt">
+        <button id="randomSetBtn" class="secondary">랜덤 세트 시작</button>
+        <button id="wrongBtn" class="light">헷갈림/틀림 복습</button>
+      </div>
+      <div id="setList" class="setList mt"></div>
+    </div>
+  </section>
+
+  <section class="card mt">
+    <div class="qtop">
+      <div class="row">
+        <span id="metaType" class="pill pink">유형</span>
+        <span id="metaUnit" class="pill blue">Unit</span>
+        <span id="metaGroup" class="pill green">Group</span>
+        <span id="metaLevel" class="pill yellow">난이도</span>
+      </div>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+    <div class="progress"><div id="bar" class="bar"></div></div>
+    <div class="qbox mt">
+      <div class="qtop"><div><div class="small">현재 질문</div><div id="qNumber" class="qnum">-</div></div><div class="small" id="position">세트를 선택하세요</div></div>
+      <div id="question" class="question">왼쪽에 데이터를 넣고 세트를 시작해 주세요.</div>
+      <div id="translation" class="ko hidden"></div>
+      <textarea id="memo" class="answer mt" placeholder="내 답변 키워드나 스크립트를 적어도 돼요."></textarea>
+    </div>
+    <div class="row mt">
+      <button id="prevBtn" class="ghost">이전</button>
+      <button id="showKoBtn" class="light">해석 보기</button>
+      <button id="speakBtn" class="secondary">질문 읽기</button>
+      <button id="nextBtn">다음</button>
+      <button id="okBtn" class="good">맞힘</button>
+      <button id="maybeBtn" class="warn">헷갈림</button>
+      <button id="noBtn" class="bad">틀림</button>
+    </div>
+    <div class="small mt">단축키: <span class="kbd">Space</span> 다음, <span class="kbd">K</span> 해석, <span class="kbd">1</span> 맞힘, <span class="kbd">2</span> 헷갈림, <span class="kbd">3</span> 틀림</div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let rows=[], sets=[], current=[], idx=0, startedAt=null, timerId=null;
+const LS_DATA='opic_set_data_v1', LS_STATS='opic_set_stats_v1';
+let stats=JSON.parse(localStorage.getItem(LS_STATS)||'{}');
+function saveStats(){localStorage.setItem(LS_STATS,JSON.stringify(stats));}
+function cleanCell(v){return String(v??'').replace(/\r?\n/g,' ').replace(/\s+/g,' ').trim();}
+function parseTSV(text){return text.trim().split(/\n+/).map(line=>line.split('\t').map(cleanCell)).filter(c=>c.length>=7 && c[0] && c[1] && c[2] && c[3]).map(c=>({type:c[0],unit:c[1],group:c[2],qno:c[3],level:c[4],en:c[5],ko:c.slice(6).join(' ')}));}
+function rowsToTSV(arr){return arr.map(r=>[r.type,r.unit,r.group,r.qno,r.level,r.en,r.ko].map(cleanCell).join('\t')).join('\n');}
+function parseWorkbookToRows(wb){
+  const sheetName = wb.SheetNames.includes('0.질문') ? '0.질문' : wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  const data = XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+  let headerIdx = data.findIndex(row => row.some(v=>cleanCell(v)==='공통형/선택형') && row.some(v=>cleanCell(v).includes('unit')) && row.some(v=>cleanCell(v).includes('내용')));
+  if(headerIdx < 0) headerIdx = 2;
+  const out=[];
+  for(let i=headerIdx+1;i<data.length;i++){
+    const r=data[i].map(cleanCell);
+    const item={type:r[0],unit:r[1],group:r[2],qno:r[3],level:r[4],en:r[5],ko:r[6]};
+    if(item.type && item.unit && item.group && item.qno && item.en) out.push(item);
+  }
+  return {rows:out, sheetName};
+}
+async function loadExcelFile(){
+  const file=$('excelFile').files[0];
+  if(!file){alert('엑셀 파일을 먼저 선택해 주세요.');return;}
+  const name=file.name.toLowerCase();
+  if(name.endsWith('.csv') || name.endsWith('.tsv')){
+    const text=await file.text();
+    $('dataInput').value=text;
+    loadData();
+    $('loadInfo').textContent += ` 파일: ${file.name}`;
+    return;
+  }
+  if(typeof XLSX==='undefined'){
+    alert('엑셀 라이브러리를 불러오지 못했어요. 인터넷 연결 상태를 확인하거나, 엑셀 내용을 복사해서 붙여넣어 주세요.');
+    return;
+  }
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  const parsed=parseWorkbookToRows(wb);
+  $('dataInput').value=rowsToTSV(parsed.rows);
+  loadData();
+  $('loadInfo').textContent += ` / ${file.name} · ${parsed.sheetName} 탭`;
+}
+function groupRows(){const map=new Map(); rows.forEach(r=>{const key=[r.type,r.unit,r.group].join('|'); if(!map.has(key)) map.set(key,[]); map.get(key).push(r);}); sets=[...map.entries()].map(([key,items])=>{items.sort((a,b)=>Number(a.qno)-Number(b.qno)); return {key,items,type:items[0].type,unit:items[0].unit,group:items[0].group,levels:[...new Set(items.map(x=>x.level))].join('/')};});}
+function fillFilters(){[['typeFilter','type'],['unitFilter','unit'],['levelFilter','level']].forEach(([id,field])=>{const sel=$(id), cur=sel.value; sel.innerHTML='<option value="">전체</option>'; const vals=[...new Set(rows.map(r=>r[field]))].filter(Boolean).sort((a,b)=>Number(a)-Number(b)||String(a).localeCompare(String(b))); vals.forEach(v=>sel.add(new Option(v,v))); sel.value=cur;});}
+function filteredSets(){const t=$('typeFilter').value,u=$('unitFilter').value,l=$('levelFilter').value; return sets.filter(s=>(!t||s.type===t)&&(!u||s.unit===u)&&(!l||s.items.some(x=>x.level===l)));}
+function renderSets(){const box=$('setList'); box.innerHTML=''; const fs=filteredSets(); if(!fs.length){box.innerHTML='<div class="notice">불러온 세트가 없어요.</div>';return;} fs.forEach(s=>{const div=document.createElement('div'); div.className='setItem'; div.innerHTML=`<div><b>${s.type} Unit ${s.unit} / 그룹 ${s.group}</b><br><span>${s.items.length}문제 · ${s.items.map(x=>x.qno).join(', ')} · ${s.levels}</span></div>`; const btn=document.createElement('button'); btn.className='light'; btn.textContent='시작'; btn.onclick=()=>startSet(s.items); div.appendChild(btn); box.appendChild(div);});}
+function loadData(){rows=parseTSV($('dataInput').value); localStorage.setItem(LS_DATA,$('dataInput').value); groupRows(); fillFilters(); renderSets(); $('loadInfo').textContent=`질문 ${rows.length}개, 세트 ${sets.length}개를 불러왔어요.`;}
+function startSet(items){current=[...items]; idx=0; startedAt=Date.now(); clearInterval(timerId); timerId=setInterval(updateTimer,300); $('memo').value=''; renderQ();}
+function updateTimer(){if(!startedAt)return; const s=Math.floor((Date.now()-startedAt)/1000); $('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function renderQ(){if(!current.length)return; const q=current[idx]; $('metaType').textContent=q.type; $('metaUnit').textContent='Unit '+q.unit; $('metaGroup').textContent='Group '+q.group; $('metaLevel').textContent=q.level; $('qNumber').textContent=q.qno; $('position').textContent=`${idx+1} / ${current.length}`; $('question').textContent=q.en; $('translation').textContent=q.ko; $('translation').classList.add('hidden'); $('bar').style.width=((idx+1)/current.length*100)+'%'; $('prevBtn').disabled=idx===0; $('nextBtn').textContent=idx===current.length-1?'세트 완료':'다음';}
+function mark(status){if(!current.length)return; const q=current[idx]; stats[q.qno]={status,at:new Date().toISOString(),unit:q.unit,group:q.group,type:q.type}; saveStats(); if(idx<current.length-1){idx++; $('memo').value=''; renderQ();}}
+$('loadBtn').onclick=loadData;
+$('fileLoadBtn').onclick=loadExcelFile;
+$('sampleBtn').onclick=()=>{$('dataInput').value=`공통형\t2\t1\t1\tInt\tTell me about how recycling is practiced in your country. What do people specifically do? Tell me how things are recycled.\t우리나라의 재활용 현황에 대해 말해 주세요. 사람들이 구체적으로 어떻게 재활용을 하나요? 재활용이 어떻게 이루어지는지 설명해 주세요.\n공통형\t2\t1\t2\tInt\tTell me about all the different kinds of things that you recycle.\t본인이 재활용하는 물건들에 대해 말해 주세요.\n공통형\t2\t1\t3\tAdv\tCan you tell me about a story or an experience you had related to recycling? Describe your experience in detail.\t재활용과 관련된 기억에 남는 경험이나 에피소드를 말해 주세요.`; loadData();};
+$('clearBtn').onclick=()=>{if(confirm('저장된 데이터와 기록을 지울까요?')){localStorage.removeItem(LS_DATA);localStorage.removeItem(LS_STATS);location.reload();}};
+['typeFilter','unitFilter','levelFilter'].forEach(id=>$(id).onchange=renderSets);
+$('randomSetBtn').onclick=()=>{const fs=filteredSets(); if(!fs.length)return; startSet(fs[Math.floor(Math.random()*fs.length)].items);};
+$('wrongBtn').onclick=()=>{const bad=rows.filter(r=>['maybe','no'].includes(stats[r.qno]?.status)); if(!bad.length){alert('헷갈림/틀림 기록이 아직 없어요.');return;} startSet(bad);};
+$('prevBtn').onclick=()=>{if(idx>0){idx--;renderQ();}};
+$('nextBtn').onclick=()=>{if(!current.length)return; if(idx<current.length-1){idx++;$('memo').value='';renderQ();}else alert('세트 완료!');};
+$('showKoBtn').onclick=()=>$('translation').classList.toggle('hidden');
+$('speakBtn').onclick=()=>{if(!current.length||!speechSynthesis)return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(current[idx].en); u.lang='en-US'; u.rate=.9; speechSynthesis.speak(u);};
+$('okBtn').onclick=()=>mark('ok'); $('maybeBtn').onclick=()=>mark('maybe'); $('noBtn').onclick=()=>mark('no');
+document.addEventListener('keydown',e=>{if(e.target.tagName==='TEXTAREA')return; if(e.code==='Space'){e.preventDefault();$('nextBtn').click();} if(e.key.toLowerCase()==='k')$('showKoBtn').click(); if(e.key==='1')$('okBtn').click(); if(e.key==='2')$('maybeBtn').click(); if(e.key==='3')$('noBtn').click();});
+const saved=localStorage.getItem(LS_DATA); if(saved){$('dataInput').value=saved; loadData();}
+</script>
+</body>
+</html>
