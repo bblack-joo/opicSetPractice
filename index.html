@@ -36,10 +36,9 @@
         <button class="ghost" id="fileLoadBtn">엑셀 파일 불러오기</button>
       </div>
       <div class="small mt">엑셀은 <b>0.질문</b> 탭에서 읽고, 화면처럼 3행의 헤더 아래 데이터를 자동으로 가져옵니다.</div>
-      <textarea id="dataInput" placeholder="공통형	2	1	1	Int	Tell me about...	해석...	내 답변 키워드"></textarea>
+      <textarea id="dataInput" placeholder="엑셀 데이터를 붙여넣거나 파일을 불러와 주세요."></textarea>
       <div class="row mt">
         <button id="loadBtn">데이터 불러오기</button>
-        <button class="ghost" id="sampleBtn">샘플 넣기</button>
         <button class="ghost" id="clearBtn">초기화</button>
       </div>
       <div id="loadInfo" class="small mt"></div>
@@ -222,7 +221,6 @@ function resultText(){return current.map((q,i)=>`Q${i+1}. ${q.qno}번\n${q.en}\n
 function mark(status){if(!current.length)return; saveCurrentAnswer(); const q=current[idx]; stats[q.qno]={status,at:new Date().toISOString(),unit:q.unit,group:q.group,type:q.type}; saveStats(); if(idx<current.length-1){idx++; renderQ();}else{finishSet();}}
 $('loadBtn').onclick=loadData;
 $('fileLoadBtn').onclick=loadExcelFile;
-$('sampleBtn').onclick=()=>{$('dataInput').value=`공통형\t2\t1\t1\tInt\tTell me about how recycling is practiced in your country. What do people specifically do? Tell me how things are recycled.\t우리나라의 재활용 현황에 대해 말해 주세요. 사람들이 구체적으로 어떻게 재활용을 하나요? 재활용이 어떻게 이루어지는지 설명해 주세요.\n공통형\t2\t1\t2\tInt\tTell me about all the different kinds of things that you recycle.\t본인이 재활용하는 물건들에 대해 말해 주세요.\n공통형\t2\t1\t3\tAdv\tCan you tell me about a story or an experience you had related to recycling? Describe your experience in detail.\t재활용과 관련된 기억에 남는 경험이나 에피소드를 말해 주세요.`; loadData();};
 $('clearBtn').onclick=()=>{if(confirm('저장된 데이터와 기록을 지울까요?')){localStorage.removeItem(LS_DATA);localStorage.removeItem(LS_STATS);location.reload();}};
 ['typeFilter','unitFilter','levelFilter'].forEach(id=>$(id).onchange=renderSets);
 $('randomSetBtn').onclick=()=>{const fs=filteredSets(); if(!fs.length)return; startSet(fs[Math.floor(Math.random()*fs.length)].items);};
@@ -236,7 +234,7 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='TEXTAREA')return;
 $('memo').addEventListener('input', saveCurrentAnswer);
 $('copyResultBtn').onclick=async()=>{const text=resultText(); try{await navigator.clipboard.writeText(text); alert('복사했어요.');}catch(e){prompt('복사해서 사용하세요.', text);}};
 $('restartBtn').onclick=()=>{if(current.length)startSet(current);};
-const saved=localStorage.getItem(LS_DATA); if(saved){$('dataInput').value=saved; loadData();}
+// 시작할 때 기본 데이터는 넣지 않습니다. 파일을 불러오거나 붙여넣은 뒤 [데이터 불러오기]를 눌러 주세요.
 </script>
 </body>
 </html>
